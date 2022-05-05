@@ -1,34 +1,33 @@
-import React, { Component } from 'react'
+import React, { useState, useEffect } from 'react'
 import api from '../../services/api'
 
 import './styles.css'
 
-export default class Product extends Component {
-	state = {
-		product: {}
-	}
+const Product = () => {
+	const [product, setProduct] = useState({})
 
-	async componentDidMount() {
+	useEffect(() => {
 		const { id } = this.props.match.params
 
-		const response = await api.get(`/products/${id}`)
+    const fetchData = async () => {
+			const response = await api.get(`/products/${id}`)
+			setProduct(response.data)
+		}
 
-		this.setState({ product: response.data })
-	}
+		fetchData()
+  }, [])
 
-	render() {
-		const { product } = this.state
+	return (
+		<div className='product-info'>
+			<h1>{product.title}</h1>
+			<p>{product.description}</p>
 
-		return (
-			<div className='product-info'>
-				<h1>{product.title}</h1>
-				<p>{product.description}</p>
+			<p>
+				URL: <a href={product.url}>{product.url}</a>
+			</p>
 
-				<p>
-					URL: <a href={product.url}>{product.url}</a>
-				</p>
+		</div>
+	)
+}
 
-			</div>
-		)
-	}
-} 
+export default Product

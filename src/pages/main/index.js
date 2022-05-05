@@ -1,68 +1,58 @@
-import React, { Component } from 'react'
+import React, { useState, useEffect } from 'react'
 import api from '../../services/api'
 import { Link } from 'react-router-dom'
 
 import './styles.css'
 
-export default class Main extends Component {
-  state = {
-    products: [],
-    productInfo: {},
-    page: 1
-  }
+const Main = () => {
+  const [products, setProducts] = useState([])
+  const [productInfo, setProductInfo] = useState({})
+  const [page, setPage] = useState(1)
 
-  componentDidMount() {
-    this.loadProducts()
-  }
+  useEffect(() => {
+    loadProducts()
+    console.log(`${process.env.REACT_APP_BASE_URL}`)
+  }, [])
 
-  loadProducts = async (page = 1) => {
+  const loadProducts = async (page = 1) => {
     const response = await api.get(`/products?page=${page}`)
-
     const { docs, ...productInfo } = response.data
 
-    this.setState({ products: docs, productInfo, page })
-    // console.log(response.data.docs)
+    setProducts({ products: docs })
+    setProductInfo(productInfo)
+    setPage(page)
   }
 
-  prevPage = () => {
-    // const { page, productInfo } = this.state
-    const { page } = this.state
-
-    if (page === 1) return
-
-    const pageNumber = page - 1
-
-    this.loadProducts(pageNumber)
+  const prevPage = () => {
+    if (page === 1){
+      const pageNumber = page - 1
+      loadProducts(pageNumber)
+    }
   }
 
-  nextPage = () => {
-    const { page, productInfo } = this.state
-
-    if (page === productInfo.pages) return
-
-    const pageNumber = page + 1
-
-    this.loadProducts(pageNumber)
+  const nextPage = () => {
+    if (page === productInfo.pages){
+      const pageNumber = page + 1
+      loadProducts(pageNumber)
+    }
   }
+    
+  return (
+    <div className='product-list'>
+      { products.map(product => (
+        <article key={product._id}>
+          <strong>{product.title}</strong>
+          <p>{product.description}</p>
 
-  render() {
-    const { products, page, productInfo } = this.state
-
-    return (
-      <div className='product-list'>
-        { products.map(product => (
-          <article key={product._id}>
-            <strong>{product.title}</strong>
-            <p>{product.description}</p>
-
-            <Link to={`/products/${product._id}`}>Acessar</Link>
-          </article>
-        ))}
-        <div className='actions'>
-          <button disabled={page === 1} onClick={this.prevPage}>Anterior</button>
-          <button disabled={page === productInfo.pages} onClick={this.nextPage}>Próximo</button>
-        </div>
+          <Link to={`/products/${product._id}`}>Acessar</Link>
+        </article>
+      ))}
+      <div className='actions'>
+        <button disabled={page === 1} onClick={prevPage}>Anterior</button>
+        <button disabled={page === productInfo.pages} onClick={nextPage}>Próximo</button>
       </div>
-    )
-  }
+    </div>
+  )
 }
+
+export default Main
